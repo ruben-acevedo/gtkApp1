@@ -1,56 +1,29 @@
-imports.gi.versions.Gtk = "4.0";
-const Gtk  = imports.gi.Gtk;
+const gi = require('node-gtk')
+const Gtk = gi.require('Gtk', '3.0')
+const childProcess = require('child_process')
+const buildGrid = require('./grid')
+const buildWindow = require('./window')
 
-let app = new Gtk.Application({ application_id: 'org.gtk.GtkApp' });
+gi.startLoop()
+Gtk.init()
 
-app.connect('activate', () => {
-    let win = new Gtk.ApplicationWindow({ application: app });
-    let grid = new Gtk.Grid();
-    configWindow(win);
-    configGrid(grid);
+const win = new Gtk.Window()
+let grid = new Gtk.Grid()
+buildWindow(win);
+buildGrid(grid);
 
-    let btn = createButton('Click to fullscreen!');
-    let btn2 = createButton('Click to close!');
 
-    btn.connect('clicked', () => { 
-        win.fullscreen();
-     });
+let btnHello = new Gtk.Button({ label: 'Say Hello!' })
+let btnFullscreen = new Gtk.Button({ label: 'Fullscreen' })
+let btnExit = new Gtk.Button({ label: 'Exit' })
+btnHello.on('clicked', () => childProcess.exec('notify-send "Hello World"'))
+btnFullscreen.on('clicked', () => win.fullscreen())
+btnExit.on('clicked', () => win.close())
 
-    btn2.connect('clicked', () => {
-        win.close();
-    });
+grid.attach(btnHello, 0, 0, 1, 1)
+grid.attach(btnFullscreen, 0, 1, 1, 1)
+grid.attach(btnExit, 0, 2, 1, 1)
 
-    grid.attach(btn, 0, 0, 1, 1);
-    grid.attach(btn2, 0, 1, 1, 1);
-
-    win.set_child(grid); 
-    win.present();
-});
-
-configWindow = (win) => {
-    win.set_title('Test-App');
-    win.set_default_size(200, 200);
-}
-
-configGrid = (grid) => {
-    grid.set_margin_top(10);
-    grid.set_column_spacing(10);
-    grid.set_row_spacing(10);
-    grid.set_column_homogeneous(true);
-    grid.set_row_homogeneous(true);
-    grid.set_valign(Gtk.Align.CENTER);
-    grid.set_halign(Gtk.Align.CENTER);
-}
-
-createButton = (label) => {
-    let btn = new Gtk.Button({ label: label });
-    btn.set_margin_top(10);
-    btn.set_margin_bottom(10);
-    btn.set_margin_start(10);
-    btn.set_margin_end(10);
-    btn.set_valign(Gtk.Align.CENTER);
-    btn.set_halign(Gtk.Align.CENTER);
-    return btn;
-}
-
-app.run([]);
+win.add(grid)
+win.showAll()
+Gtk.main()
